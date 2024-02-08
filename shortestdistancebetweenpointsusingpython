@@ -1,0 +1,48 @@
+import math
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def dist(self, p2):
+        return math.sqrt((self.x - p2.x) ** 2 + (self.y - p2.y) ** 2)
+
+def bruteForce(P, n):
+    min_dist = float("inf")
+    for i in range(n):
+        for j in range(i + 1, n):
+            min_dist = min(min_dist, P[i].dist(P[j]))
+    return min_dist
+
+def closestPairUtil(P, Q, n):
+    if n <= 3:
+        return bruteForce(P, n)
+
+    mid = n // 2
+    midpoint = P[mid]
+    Pl = P[:mid]
+    Pr = P[mid:]
+    dl = closestPairUtil(Pl, Q, mid)
+    dr = closestPairUtil(Pr, Q, n - mid)
+    d = min(dl, dr)
+    strip = [point for point in Q if abs(point.x - midpoint.x) < d]
+    strip.sort(key=lambda point: point.y)
+    strip_len = len(strip)
+    min_in_strip = d
+    for i in range(strip_len):
+        j = i + 1
+        while j < strip_len and strip[j].y - strip[i].y < min_in_strip:
+            min_in_strip = min(min_in_strip, strip[i].dist(strip[j]))
+            j += 1
+    return min(min_in_strip, d)
+
+def closestPair(P):
+    P.sort(key=lambda point: point.x)
+    Q = P[:]
+    Q.sort(key=lambda point: point.y)
+    return closestPairUtil(P, Q, len(P))
+
+# Example usage:
+points = [Point(2, 3), Point(12, 30), Point(40, 50), Point(5, 1), Point(12, 10), Point(3, 4)]
+print("The smallest distance is", closestPair(points))
